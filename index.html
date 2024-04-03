@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/filter.css">
+<link rel="stylesheet" href="css/nouislider.min.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/tailDT.js"></script>
+<script src="js/nouislider.min.js"></script>
+<script src="js/wNumb.js"></script>
+        <script src="data/BatasProvinsi_1.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+            highlightLayer.openPopup();
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[-17.494650770632468,99.95104174750537],[10.586233866509852,148.30157902765535]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
+          var tagName = event.target.tagName,
+            popup = map._popup;
+          // Also check if flag is already set.
+          if (tagName === "IMG" && popup && !popup._updated) {
+            popup._updated = true; // Set flag to prevent looping.
+            popup.update();
+          }
+        }, true);
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        map.createPane('pane_OSMStandard_0');
+        map.getPane('pane_OSMStandard_0').style.zIndex = 400;
+        var layer_OSMStandard_0 = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OSMStandard_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors, CC-BY-SA</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OSMStandard_0;
+        map.addLayer(layer_OSMStandard_0);
+        function pop_BatasProvinsi_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    if (typeof layer.closePopup == 'function') {
+                        layer.closePopup();
+                    } else {
+                        layer.eachLayer(function(feature){
+                            feature.closePopup()
+                        });
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>OBJECTID</strong><br />' + (feature.properties['OBJECTID'] !== null ? autolinker.link(feature.properties['OBJECTID'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>PROVINSI</strong><br />' + (feature.properties['PROVINSI'] !== null ? autolinker.link(feature.properties['PROVINSI'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>IR DBD 202</strong><br />' + (feature.properties['IR DBD 202'] !== null ? autolinker.link(feature.properties['IR DBD 202'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_BatasProvinsi_1_0(feature) {
+            if (feature.properties['IR DBD 202'] >= 0.000000 && feature.properties['IR DBD 202'] <= 52.000000 ) {
+                return {
+                pane: 'pane_BatasProvinsi_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(27,225,54,1.0)',
+                interactive: true,
+            }
+            }
+            if (feature.properties['IR DBD 202'] >= 52.000000 && feature.properties['IR DBD 202'] <= 181.310000 ) {
+                return {
+                pane: 'pane_BatasProvinsi_1',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(255,0,0,1.0)',
+                interactive: true,
+            }
+            }
+        }
+        map.createPane('pane_BatasProvinsi_1');
+        map.getPane('pane_BatasProvinsi_1').style.zIndex = 401;
+        map.getPane('pane_BatasProvinsi_1').style['mix-blend-mode'] = 'normal';
+        var layer_BatasProvinsi_1 = new L.geoJson(json_BatasProvinsi_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_BatasProvinsi_1',
+            layerName: 'layer_BatasProvinsi_1',
+            pane: 'pane_BatasProvinsi_1',
+            onEachFeature: pop_BatasProvinsi_1,
+            style: style_BatasProvinsi_1_0,
+        });
+        bounds_group.addLayer(layer_BatasProvinsi_1);
+        map.addLayer(layer_BatasProvinsi_1);
+        var baseMaps = {};
+        L.control.layers(baseMaps,{'Batas Provinsi<br /><table><tr><td style="text-align: center;"><img src="legend/BatasProvinsi_1_DibawahIRrataratanasional0.png" /></td><td>Dibawah IR rata-rata nasional</td></tr><tr><td style="text-align: center;"><img src="legend/BatasProvinsi_1_DiatasIRrataratanasional1.png" /></td><td>Diatas IR rata-rata nasional</td></tr></table>': layer_BatasProvinsi_1,"OSM Standard": layer_OSMStandard_0,},{collapsed:false}).addTo(map);
+        setBounds();
+        var mapDiv = document.getElementById('map');
+        var row = document.createElement('div');
+        row.className="row";
+        row.id="all";
+        row.style.height = "100%";
+        var col1 = document.createElement('div');
+        col1.className="col9";
+        col1.id = "mapWindow";
+        col1.style.height = "99%";
+        col1.style.width = "80%";
+        col1.style.display = "inline-block";
+        var col2 = document.createElement('div');
+        col2.className="col3";
+        col2.id = "menu";
+        col2.style.display = "inline-block";
+        mapDiv.parentNode.insertBefore(row, mapDiv);
+        document.getElementById("all").appendChild(col1);
+        document.getElementById("all").appendChild(col2);
+        col1.appendChild(mapDiv)
+        var Filters = {"IR DBD 202": "real","OBJECTID": "real","PROVINSI": "str"};
+        function filterFunc() {
+          map.eachLayer(function(lyr){
+          if ("options" in lyr && "dataVar" in lyr["options"]){
+            features = this[lyr["options"]["dataVar"]].features.slice(0);
+            try{
+              for (key in Filters){
+                keyS = key.replace(/[^a-zA-Z0-9_]/g, "")
+                if (Filters[key] == "str" || Filters[key] == "bool"){
+                  var selection = [];
+                  var options = document.getElementById("sel_" + keyS).options
+                  for (var i=0; i < options.length; i++) {
+                    if (options[i].selected) selection.push(options[i].value);
+                  }
+                    try{
+                      if (key in features[0].properties){
+                        for (i = features.length - 1;
+                          i >= 0; --i){
+                          if (selection.indexOf(
+                          features[i].properties[key])<0
+                          && selection.length>0) {
+                          features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                  }
+                }
+                if (Filters[key] == "int"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (parseInt(features[i].properties[key])
+                          < sliderVals[0]
+                          || parseInt(features[i].properties[key])
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "real"){
+                  sliderVals =  document.getElementById(
+                    "div_" + keyS).noUiSlider.get();
+                  try{
+                    if (key in features[0].properties){
+                    for (i = features.length - 1; i >= 0; --i){
+                      if (features[i].properties[key]
+                          < sliderVals[0]
+                          || features[i].properties[key]
+                          > sliderVals[1]){
+                            features.splice(i,1);
+                          }
+                        }
+                      }
+                    } catch(err){
+                    }
+                  }
+                if (Filters[key] == "date"
+                  || Filters[key] == "datetime"
+                  || Filters[key] == "time"){
+                  try{
+                    if (key in features[0].properties){
+                      HTMLkey = key.replace(/[&\/\\#,+()$~%.'":*?<>{} ]/g, '');
+                      startdate = document.getElementById("dat_" +
+                        HTMLkey + "_date1").value.replace(" ", "T");
+                      enddate = document.getElementById("dat_" +
+                        HTMLkey + "_date2").value.replace(" ", "T");
+                      for (i = features.length - 1; i >= 0; --i){
+                        if (features[i].properties[key] < startdate
+                          || features[i].properties[key] > enddate){
+                          features.splice(i,1);
+                        }
+                      }
+                    }
+                  } catch(err){
+                  }
+                }
+              }
+            } catch(err){
+            }
+          this[lyr["options"]["layerName"]].clearLayers();
+          this[lyr["options"]["layerName"]].addData(features);
+          }
+          })
+        }
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_IRDBD202 = document.createElement("div");
+            div_IRDBD202.id = "div_IRDBD202";
+            div_IRDBD202.className = "slider";
+            document.getElementById("menu").appendChild(div_IRDBD202);
+            var lab_IRDBD202 = document.createElement('div');
+            lab_IRDBD202.innerHTML  = 'IR DBD 202: <span id="val_IRDBD202"></span>';
+            lab_IRDBD202.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_IRDBD202);
+            var reset_IRDBD202 = document.createElement('div');
+            reset_IRDBD202.innerHTML = 'clear filter';
+            reset_IRDBD202.className = 'filterlabel';
+            lab_IRDBD202.className = 'filterlabel';
+            reset_IRDBD202.onclick = function() {
+                sel_IRDBD202.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_IRDBD202);
+            var sel_IRDBD202 = document.getElementById('div_IRDBD202');
+            noUiSlider.create(sel_IRDBD202, {
+                connect: true,
+                start: [5.26, 181.31],
+                range: {
+                min: 5.26,
+                max: 181.31
+                }
+            });
+            sel_IRDBD202.noUiSlider.on('update', function (values) {
+            val_IRDBD202 = document.getElementById('val_IRDBD202');
+            val_IRDBD202.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_OBJECTID = document.createElement("div");
+            div_OBJECTID.id = "div_OBJECTID";
+            div_OBJECTID.className = "slider";
+            document.getElementById("menu").appendChild(div_OBJECTID);
+            var lab_OBJECTID = document.createElement('div');
+            lab_OBJECTID.innerHTML  = 'OBJECTID: <span id="val_OBJECTID"></span>';
+            lab_OBJECTID.className = 'filterlabel';
+            document.getElementById("menu").appendChild(lab_OBJECTID);
+            var reset_OBJECTID = document.createElement('div');
+            reset_OBJECTID.innerHTML = 'clear filter';
+            reset_OBJECTID.className = 'filterlabel';
+            lab_OBJECTID.className = 'filterlabel';
+            reset_OBJECTID.onclick = function() {
+                sel_OBJECTID.noUiSlider.reset();
+            };
+            document.getElementById("menu").appendChild(reset_OBJECTID);
+            var sel_OBJECTID = document.getElementById('div_OBJECTID');
+            noUiSlider.create(sel_OBJECTID, {
+                connect: true,
+                start: [1.0, 82228.0],
+                range: {
+                min: 1.0,
+                max: 82228.0
+                }
+            });
+            sel_OBJECTID.noUiSlider.on('update', function (values) {
+            val_OBJECTID = document.getElementById('val_OBJECTID');
+            val_OBJECTID.innerHTML = values.join(' - ');
+                filterFunc()
+            });
+            document.getElementById("menu").appendChild(
+                document.createElement("div"));
+            var div_PROVINSI = document.createElement('div');
+            div_PROVINSI.id = "div_PROVINSI";
+            div_PROVINSI.className= "filterselect";
+            document.getElementById("menu").appendChild(div_PROVINSI);
+            sel_PROVINSI = document.createElement('select');
+            sel_PROVINSI.multiple = true;
+            sel_PROVINSI.size = 10;
+            sel_PROVINSI.id = "sel_PROVINSI";
+            var PROVINSI_options_str = "<option value='' unselected></option>";
+            sel_PROVINSI.onchange = function(){filterFunc()};
+            PROVINSI_options_str  += '<option value="Aceh">Aceh</option>';
+            PROVINSI_options_str  += '<option value="Bali">Bali</option>';
+            PROVINSI_options_str  += '<option value="Banten">Banten</option>';
+            PROVINSI_options_str  += '<option value="Bengkulu">Bengkulu</option>';
+            PROVINSI_options_str  += '<option value="DKI Jakarta">DKI Jakarta</option>';
+            PROVINSI_options_str  += '<option value="Daerah Istimewa Yogyakarta">Daerah Istimewa Yogyakarta</option>';
+            PROVINSI_options_str  += '<option value="Gorontalo">Gorontalo</option>';
+            PROVINSI_options_str  += '<option value="Jambi">Jambi</option>';
+            PROVINSI_options_str  += '<option value="Jawa Barat">Jawa Barat</option>';
+            PROVINSI_options_str  += '<option value="Jawa Tengah">Jawa Tengah</option>';
+            PROVINSI_options_str  += '<option value="Jawa Timur">Jawa Timur</option>';
+            PROVINSI_options_str  += '<option value="Kalimantan Barat">Kalimantan Barat</option>';
+            PROVINSI_options_str  += '<option value="Kalimantan Selatan">Kalimantan Selatan</option>';
+            PROVINSI_options_str  += '<option value="Kalimantan Tengah">Kalimantan Tengah</option>';
+            PROVINSI_options_str  += '<option value="Kalimantan Timur">Kalimantan Timur</option>';
+            PROVINSI_options_str  += '<option value="Kalimantan Utara">Kalimantan Utara</option>';
+            PROVINSI_options_str  += '<option value="Kepulauan Bangka Belitung">Kepulauan Bangka Belitung</option>';
+            PROVINSI_options_str  += '<option value="Kepulauan Riau">Kepulauan Riau</option>';
+            PROVINSI_options_str  += '<option value="Lampung">Lampung</option>';
+            PROVINSI_options_str  += '<option value="Maluku">Maluku</option>';
+            PROVINSI_options_str  += '<option value="Maluku Utara">Maluku Utara</option>';
+            PROVINSI_options_str  += '<option value="Nusa Tenggara Barat">Nusa Tenggara Barat</option>';
+            PROVINSI_options_str  += '<option value="Nusa Tenggara Timur">Nusa Tenggara Timur</option>';
+            PROVINSI_options_str  += '<option value="Papua">Papua</option>';
+            PROVINSI_options_str  += '<option value="Papua Barat">Papua Barat</option>';
+            PROVINSI_options_str  += '<option value="Papua Barat Daya">Papua Barat Daya</option>';
+            PROVINSI_options_str  += '<option value="Papua Pegunungan">Papua Pegunungan</option>';
+            PROVINSI_options_str  += '<option value="Papua Selatan">Papua Selatan</option>';
+            PROVINSI_options_str  += '<option value="Papua Tengah">Papua Tengah</option>';
+            PROVINSI_options_str  += '<option value="Riau">Riau</option>';
+            PROVINSI_options_str  += '<option value="Sulawesi Barat">Sulawesi Barat</option>';
+            PROVINSI_options_str  += '<option value="Sulawesi Selatan">Sulawesi Selatan</option>';
+            PROVINSI_options_str  += '<option value="Sulawesi Tengah">Sulawesi Tengah</option>';
+            PROVINSI_options_str  += '<option value="Sulawesi Tenggara">Sulawesi Tenggara</option>';
+            PROVINSI_options_str  += '<option value="Sulawesi Utara">Sulawesi Utara</option>';
+            PROVINSI_options_str  += '<option value="Sumatera Barat">Sumatera Barat</option>';
+            PROVINSI_options_str  += '<option value="Sumatera Selatan">Sumatera Selatan</option>';
+            PROVINSI_options_str  += '<option value="Sumatera Utara">Sumatera Utara</option>';
+            sel_PROVINSI.innerHTML = PROVINSI_options_str;
+            div_PROVINSI.appendChild(sel_PROVINSI);
+            var lab_PROVINSI = document.createElement('div');
+            lab_PROVINSI.innerHTML = 'PROVINSI';
+            lab_PROVINSI.className = 'filterlabel';
+            div_PROVINSI.appendChild(lab_PROVINSI);
+            var reset_PROVINSI = document.createElement('div');
+            reset_PROVINSI.innerHTML = 'clear filter';
+            reset_PROVINSI.className = 'filterlabel';
+            reset_PROVINSI.onclick = function() {
+                var options = document.getElementById("sel_PROVINSI").options;
+                for (var i=0; i < options.length; i++) {
+                    options[i].selected = false;
+                }
+                filterFunc();
+            };
+            div_PROVINSI.appendChild(reset_PROVINSI);
+        </script>
+    </body>
+</html>
